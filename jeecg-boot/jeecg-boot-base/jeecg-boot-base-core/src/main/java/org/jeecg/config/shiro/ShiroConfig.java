@@ -27,6 +27,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.util.StringUtils;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPoolConfig;
 
 import javax.annotation.Resource;
 import javax.servlet.Filter;
@@ -240,8 +241,11 @@ public class ShiroConfig {
             // redis集群支持，优先使用集群配置
             RedisClusterManager redisManager = new RedisClusterManager();
             Set<HostAndPort> portSet = new HashSet<>();
+            JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
             lettuceConnectionFactory.getClusterConfiguration().getClusterNodes().forEach(node -> portSet.add(new HostAndPort(node.getHost() , node.getPort())));
-            JedisCluster jedisCluster = new JedisCluster(portSet);
+            JedisCluster jedisCluster = new JedisCluster(portSet, (int) lettuceConnectionFactory.getTimeout(), 20000, 1000, lettuceConnectionFactory.getPassword(), jedisPoolConfig);
+
+
             redisManager.setJedisCluster(jedisCluster);
             manager = redisManager;
         }
